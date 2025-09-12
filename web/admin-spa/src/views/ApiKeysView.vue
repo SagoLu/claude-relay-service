@@ -574,6 +574,15 @@
                             type="opus"
                           />
 
+                          <!-- 总额限制进度条 -->
+                          <LimitProgressBar
+                            v-if="key.totalCostLimit > 0"
+                            :current="key.totalCost || 0"
+                            label="总额"
+                            :limit="key.totalCostLimit"
+                            type="total"
+                          />
+
                           <!-- 时间窗口限制进度条 -->
                           <WindowLimitBar
                             v-if="key.rateLimitWindow > 0"
@@ -592,6 +601,7 @@
                             v-if="
                               !key.dailyCostLimit &&
                               !key.weeklyOpusCostLimit &&
+                              !key.totalCostLimit &&
                               !key.rateLimitWindow
                             "
                             class="dark:to-gray-750 relative h-7 w-full overflow-hidden rounded-md border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-700 dark:from-gray-800"
@@ -1215,6 +1225,15 @@
                     type="opus"
                   />
 
+                  <!-- 总额限制 -->
+                  <LimitProgressBar
+                    v-if="key.totalCostLimit > 0"
+                    :current="key.totalCost || 0"
+                    label="总额"
+                    :limit="key.totalCostLimit"
+                    type="total"
+                  />
+
                   <!-- 时间窗口限制 -->
                   <WindowLimitBar
                     v-if="key.rateLimitWindow > 0"
@@ -1230,7 +1249,12 @@
 
                   <!-- 无限制显示 -->
                   <div
-                    v-if="!key.dailyCostLimit && !key.weeklyOpusCostLimit && !key.rateLimitWindow"
+                    v-if="
+                      !key.dailyCostLimit &&
+                      !key.weeklyOpusCostLimit &&
+                      !key.totalCostLimit &&
+                      !key.rateLimitWindow
+                    "
                     class="dark:to-gray-750 relative h-7 w-full overflow-hidden rounded-md border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 dark:border-gray-700 dark:from-gray-800"
                   >
                     <div class="flex h-full items-center justify-center gap-1.5">

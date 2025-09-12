@@ -48,7 +48,7 @@ const props = defineProps({
   type: {
     type: String,
     required: true,
-    validator: (value) => ['daily', 'opus', 'window'].includes(value)
+    validator: (value) => ['daily', 'opus', 'window', 'total'].includes(value)
   },
   label: {
     type: String,
@@ -88,6 +88,8 @@ const backgroundClass = computed(() => {
       return 'bg-violet-50/50 dark:bg-violet-950/20'
     case 'window':
       return 'bg-sky-50/50 dark:bg-sky-950/20'
+    case 'total':
+      return 'bg-indigo-50/50 dark:bg-indigo-950/20'
     default:
       return 'bg-gray-100/50 dark:bg-gray-800/30'
   }
@@ -127,6 +129,16 @@ const progressBarClass = computed(() => {
     }
   }
 
+  if (props.type === 'total') {
+    if (p >= 90) {
+      return 'bg-red-400 dark:bg-red-500'
+    } else if (p >= 70) {
+      return 'bg-amber-400 dark:bg-amber-500'
+    } else {
+      return 'bg-indigo-400 dark:bg-indigo-500'
+    }
+  }
+
   return 'bg-gray-300 dark:bg-gray-400'
 })
 
@@ -151,6 +163,9 @@ const iconClass = computed(() => {
       case 'window':
         colorClass = 'text-blue-700 dark:text-blue-400'
         break
+      case 'total':
+        colorClass = 'text-indigo-700 dark:text-indigo-400'
+        break
       default:
         colorClass = 'text-gray-600 dark:text-gray-400'
     }
@@ -166,6 +181,9 @@ const iconClass = computed(() => {
       break
     case 'window':
       iconName = 'fas fa-clock'
+      break
+    case 'total':
+      iconName = 'fas fa-coins'
       break
     default:
       iconName = 'fas fa-infinity'
@@ -191,6 +209,8 @@ const labelTextClass = computed(() => {
         return 'text-purple-900 dark:text-purple-100'
       case 'window':
         return 'text-blue-900 dark:text-blue-100'
+      case 'total':
+        return 'text-indigo-900 dark:text-indigo-100'
       default:
         return 'text-gray-900 dark:text-gray-100'
     }
@@ -205,24 +225,27 @@ const currentValueClass = computed(() => {
   if (p > 70) {
     // 在彩色进度条上，使用白色+强阴影
     return 'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]'
-  } else {
-    // 在浅色背景上，根据进度状态选择颜色
-    if (p >= 90) {
-      return 'text-red-700 dark:text-red-300'
-    } else if (p >= 70) {
-      return 'text-orange-700 dark:text-orange-300'
-    } else {
-      switch (props.type) {
-        case 'daily':
-          return 'text-green-800 dark:text-green-200'
-        case 'opus':
-          return 'text-purple-800 dark:text-purple-200'
-        case 'window':
-          return 'text-blue-800 dark:text-blue-200'
-        default:
-          return 'text-gray-900 dark:text-gray-100'
-      }
-    }
+  }
+
+  // 在浅色背景上，根据进度状态选择颜色
+  if (p >= 90) {
+    return 'text-red-700 dark:text-red-300'
+  }
+  if (p >= 70) {
+    return 'text-orange-700 dark:text-orange-300'
+  }
+
+  switch (props.type) {
+    case 'daily':
+      return 'text-green-800 dark:text-green-200'
+    case 'opus':
+      return 'text-purple-800 dark:text-purple-200'
+    case 'window':
+      return 'text-blue-800 dark:text-blue-200'
+    case 'total':
+      return 'text-indigo-800 dark:text-indigo-200'
+    default:
+      return 'text-gray-900 dark:text-gray-100'
   }
 })
 
