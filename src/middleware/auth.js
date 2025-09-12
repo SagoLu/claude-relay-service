@@ -333,6 +333,36 @@ const authenticateApiKey = async (req, res, next) => {
       )
     }
 
+    // 检查总费用限制（总额度）
+    const totalCostLimit = validation.keyData.totalCostLimit || 0
+    if (totalCostLimit > 0) {
+      let { totalCost } = validation.keyData
+      if (totalCost === undefined || totalCost === null) {
+        try {
+          totalCost = await redis.getTotalCost(validation.keyData.id)
+        } catch (e) {
+          totalCost = 0
+        }
+      }
+
+      if (totalCost >= totalCostLimit) {
+        logger.security(
+          `💰 Total cost limit exceeded for key: ${validation.keyData.id} (${validation.keyData.name}), cost: $${Number(totalCost).toFixed(2)}/$${totalCostLimit}`
+        )
+
+        return res.status(429).json({
+          error: 'Total cost limit exceeded',
+          message: `已达到总额度限制 ($${totalCostLimit})`,
+          currentCost: totalCost,
+          costLimit: totalCostLimit
+        })
+      }
+
+      logger.api(
+        `💰 Total cost usage for key: ${validation.keyData.id} (${validation.keyData.name}), current: $${Number(totalCost).toFixed(2)}/$${totalCostLimit}`
+      )
+    }
+
     // 检查 Opus 周费用限制（仅对 Opus 模型生效）
     const weeklyOpusCostLimit = validation.keyData.weeklyOpusCostLimit || 0
     if (weeklyOpusCostLimit > 0) {
@@ -394,6 +424,8 @@ const authenticateApiKey = async (req, res, next) => {
       allowedClients: validation.keyData.allowedClients,
       dailyCostLimit: validation.keyData.dailyCostLimit,
       dailyCost: validation.keyData.dailyCost,
+      totalCostLimit: validation.keyData.totalCostLimit,
+      totalCost: validation.keyData.totalCost,
       usage: validation.keyData.usage
     }
     req.usage = validation.keyData.usage

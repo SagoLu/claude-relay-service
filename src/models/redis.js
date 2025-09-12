@@ -700,6 +700,12 @@ class RedisClient {
     }
   }
 
+  // 💰 获取总费用（快捷方法）
+  async getTotalCost(keyId) {
+    const total = await this.client.get(`usage:cost:total:${keyId}`)
+    return parseFloat(total || 0)
+  }
+
   // 💰 获取本周 Opus 费用
   async getWeeklyOpusCost(keyId) {
     const currentWeek = getWeekStringInTimezone()

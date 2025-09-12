@@ -533,6 +533,7 @@ router.post('/api-keys', authenticateAdmin, async (req, res) => {
       enableClientRestriction,
       allowedClients,
       dailyCostLimit,
+      totalCostLimit,
       weeklyOpusCostLimit,
       tags,
       activationDays, // 新增：激活后有效天数
@@ -640,6 +641,14 @@ router.post('/api-keys', authenticateAdmin, async (req, res) => {
       }
     }
 
+    // 验证总额度限制（可选）
+    if (totalCostLimit !== undefined && totalCostLimit !== null && totalCostLimit !== '') {
+      const limit = Number(totalCostLimit)
+      if (isNaN(limit) || limit < 0) {
+        return res.status(400).json({ error: 'Total cost limit must be a non-negative number' })
+      }
+    }
+
     const newKey = await apiKeyService.generateApiKey({
       name,
       description,
@@ -660,6 +669,7 @@ router.post('/api-keys', authenticateAdmin, async (req, res) => {
       enableClientRestriction,
       allowedClients,
       dailyCostLimit,
+      totalCostLimit,
       weeklyOpusCostLimit,
       tags,
       activationDays,
@@ -698,6 +708,7 @@ router.post('/api-keys/batch', authenticateAdmin, async (req, res) => {
       allowedClients,
       dailyCostLimit,
       weeklyOpusCostLimit,
+      totalCostLimit,
       tags,
       activationDays,
       expirationMode,
@@ -744,6 +755,7 @@ router.post('/api-keys/batch', authenticateAdmin, async (req, res) => {
           enableClientRestriction,
           allowedClients,
           dailyCostLimit,
+          totalCostLimit,
           weeklyOpusCostLimit,
           tags,
           activationDays,
@@ -860,6 +872,9 @@ router.put('/api-keys/batch', authenticateAdmin, async (req, res) => {
         }
         if (updates.dailyCostLimit !== undefined) {
           finalUpdates.dailyCostLimit = updates.dailyCostLimit
+        }
+        if (updates.totalCostLimit !== undefined) {
+          finalUpdates.totalCostLimit = updates.totalCostLimit
         }
         if (updates.weeklyOpusCostLimit !== undefined) {
           finalUpdates.weeklyOpusCostLimit = updates.weeklyOpusCostLimit
@@ -989,6 +1004,7 @@ router.put('/api-keys/:keyId', authenticateAdmin, async (req, res) => {
       allowedClients,
       expiresAt,
       dailyCostLimit,
+      totalCostLimit,
       weeklyOpusCostLimit,
       tags,
       ownerId // 新增：所有者ID字段
@@ -1136,6 +1152,15 @@ router.put('/api-keys/:keyId', authenticateAdmin, async (req, res) => {
         return res.status(400).json({ error: 'Daily cost limit must be a non-negative number' })
       }
       updates.dailyCostLimit = costLimit
+    }
+
+    // 处理总费用限制
+    if (totalCostLimit !== undefined && totalCostLimit !== null && totalCostLimit !== '') {
+      const costLimit = Number(totalCostLimit)
+      if (isNaN(costLimit) || costLimit < 0) {
+        return res.status(400).json({ error: 'Total cost limit must be a non-negative number' })
+      }
+      updates.totalCostLimit = costLimit
     }
 
     // 处理 Opus 周费用限制

@@ -33,6 +33,7 @@ class ApiKeyService {
       enableClientRestriction = false,
       allowedClients = [],
       dailyCostLimit = 0,
+      totalCostLimit = 0, // 新增：总费用限制（USD）
       weeklyOpusCostLimit = 0,
       tags = [],
       activationDays = 0, // 新增：激活后有效天数（0表示不使用此功能）
@@ -68,6 +69,7 @@ class ApiKeyService {
       enableClientRestriction: String(enableClientRestriction || false),
       allowedClients: JSON.stringify(allowedClients || []),
       dailyCostLimit: String(dailyCostLimit || 0),
+      totalCostLimit: String(totalCostLimit || 0),
       weeklyOpusCostLimit: String(weeklyOpusCostLimit || 0),
       tags: JSON.stringify(tags || []),
       activationDays: String(activationDays || 0), // 新增：激活后有效天数
@@ -111,6 +113,7 @@ class ApiKeyService {
       enableClientRestriction: keyData.enableClientRestriction === 'true',
       allowedClients: JSON.parse(keyData.allowedClients || '[]'),
       dailyCostLimit: parseFloat(keyData.dailyCostLimit || 0),
+      totalCostLimit: parseFloat(keyData.totalCostLimit || 0),
       weeklyOpusCostLimit: parseFloat(keyData.weeklyOpusCostLimit || 0),
       tags: JSON.parse(keyData.tags || '[]'),
       activationDays: parseInt(keyData.activationDays || 0),
@@ -190,6 +193,8 @@ class ApiKeyService {
 
       // 获取当日费用统计
       const dailyCost = await redis.getDailyCost(keyData.id)
+      // 获取总费用统计
+      const totalCost = await redis.getTotalCost(keyData.id)
 
       // 更新最后使用时间（优化：只在实际API调用时更新，而不是验证时）
       // 注意：lastUsedAt的更新已移至recordUsage方法中
@@ -245,8 +250,10 @@ class ApiKeyService {
           enableClientRestriction: keyData.enableClientRestriction === 'true',
           allowedClients,
           dailyCostLimit: parseFloat(keyData.dailyCostLimit || 0),
+          totalCostLimit: parseFloat(keyData.totalCostLimit || 0),
           weeklyOpusCostLimit: parseFloat(keyData.weeklyOpusCostLimit || 0),
           dailyCost: dailyCost || 0,
+          totalCost: totalCost || 0,
           weeklyOpusCost: (await redis.getWeeklyOpusCost(keyData.id)) || 0,
           tags,
           usage
@@ -305,8 +312,9 @@ class ApiKeyService {
         }
       }
 
-      // 获取当日费用
+      // 获取当日/总费用
       const dailyCost = (await redis.getDailyCost(keyData.id)) || 0
+      const totalCost = (await redis.getTotalCost(keyData.id)) || 0
 
       // 获取使用统计
       const usage = await redis.getUsageStats(keyData.id)
@@ -365,8 +373,10 @@ class ApiKeyService {
           enableClientRestriction: keyData.enableClientRestriction === 'true',
           allowedClients,
           dailyCostLimit: parseFloat(keyData.dailyCostLimit || 0),
+          totalCostLimit: parseFloat(keyData.totalCostLimit || 0),
           weeklyOpusCostLimit: parseFloat(keyData.weeklyOpusCostLimit || 0),
           dailyCost: dailyCost || 0,
+          totalCost: totalCost || 0,
           weeklyOpusCost: (await redis.getWeeklyOpusCost(keyData.id)) || 0,
           tags,
           usage
@@ -411,6 +421,7 @@ class ApiKeyService {
         key.enableClientRestriction = key.enableClientRestriction === 'true'
         key.permissions = key.permissions || 'all' // 兼容旧数据
         key.dailyCostLimit = parseFloat(key.dailyCostLimit || 0)
+        key.totalCostLimit = parseFloat(key.totalCostLimit || 0)
         key.weeklyOpusCostLimit = parseFloat(key.weeklyOpusCostLimit || 0)
         key.dailyCost = (await redis.getDailyCost(key.id)) || 0
         key.weeklyOpusCost = (await redis.getWeeklyOpusCost(key.id)) || 0
@@ -532,6 +543,7 @@ class ApiKeyService {
         'enableClientRestriction',
         'allowedClients',
         'dailyCostLimit',
+        'totalCostLimit',
         'weeklyOpusCostLimit',
         'tags',
         'userId', // 新增：用户ID（所有者变更）
@@ -1067,6 +1079,7 @@ class ApiKeyService {
           dailyCost,
           totalCost: costStats.total,
           dailyCostLimit: parseFloat(key.dailyCostLimit || 0),
+          totalCostLimit: parseFloat(key.totalCostLimit || 0),
           userId: key.userId,
           userUsername: key.userUsername,
           createdBy: key.createdBy,

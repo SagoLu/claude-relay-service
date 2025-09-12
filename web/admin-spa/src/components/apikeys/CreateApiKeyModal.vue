@@ -337,6 +337,25 @@
 
           <div>
             <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+              >总额度限制 (美元)</label
+            >
+            <div class="space-y-2">
+              <input
+                v-model="form.totalCostLimit"
+                class="form-input w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                min="0"
+                placeholder="0 或留空表示无限制"
+                step="0.01"
+                type="number"
+              />
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                设置此 API Key 的生命周期总费用上限；超过后将拒绝后续请求（允许最后一次轻微超额）。
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
               >Opus 模型周费用限制 (美元)</label
             >
             <div class="space-y-2">
@@ -861,6 +880,7 @@ const form = reactive({
   rateLimitCost: '', // 新增：费用限制
   concurrencyLimit: '',
   dailyCostLimit: '',
+  totalCostLimit: '',
   weeklyOpusCostLimit: '',
   expireDuration: '',
   customExpireDate: '',
@@ -1199,6 +1219,10 @@ const createApiKey = async () => {
         form.dailyCostLimit !== '' && form.dailyCostLimit !== null
           ? parseFloat(form.dailyCostLimit)
           : 0,
+      totalCostLimit:
+        form.totalCostLimit !== '' && form.totalCostLimit !== null
+          ? parseFloat(form.totalCostLimit)
+          : undefined,
       weeklyOpusCostLimit:
         form.weeklyOpusCostLimit !== '' && form.weeklyOpusCostLimit !== null
           ? parseFloat(form.weeklyOpusCostLimit)
